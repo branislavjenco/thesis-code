@@ -78,6 +78,7 @@ for name, filepath in obj_files:
 
     # Process the model
     cleaned_floor = cleaned_floor.process(validate=True)
+    cleaned_floor = cleaned_floor.simplify_quadratic_decimation(10)
     outline = cleaned_floor.outline()
     plan, transformation = outline.to_planar()
     plan = plan.process()
@@ -101,7 +102,7 @@ for name, filepath in obj_files:
     for v in dedup_verts:
         middle = True
         for vp in outline.vertices:
-            if np.allclose(v, vp, atol=0.1):
+            if np.allclose(v, vp, atol=0.2):
                 middle = False
                 break
         if middle:
