@@ -37,8 +37,8 @@ def merge_close_vertices(vertices, distance=0.5):
 # Find the necessary files
 obj_files = []
 for root, dirs, files in os.walk("./input"):
-    for name in files:
-        if name.endswith(".ply"):
+    for name in sorted(files):
+        if name.endswith("_full.ply"):
             obj_files.append((name, os.path.join(root, name)))
 
 
@@ -54,7 +54,11 @@ for name, filepath in obj_files:
     bottom_mesh = room.slice_plane((0, 1.5, 0), (0, -1, 0))
     upward_faces = [np.isclose(f[0], 0.0) and np.isclose(f[1], 1.0) and np.isclose(f[2], 0.0) for f in bottom_mesh.face_normals]
     bottom_mesh.update_faces(upward_faces)
-    bottom_mesh = bottom_mesh.process(validate=True)
+    try:
+        bottom_mesh = bottom_mesh.process(validate=True)
+    except BaseException:
+        print(f"Couldn't process mesh {name} in {filepath}, moving on to the next one.")
+        continue
     bottom_mesh.fill_holes()
     bottom_mesh.remove_duplicate_faces()
     bottom_mesh.remove_infinite_values()

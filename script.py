@@ -16,15 +16,16 @@ https://www.blensor.org/file_format.html
 """
 frame_start = 0
 frame_end = 72
+sweep_duration = 72
 VLP16 = "vlp16"
 
 # Clear scene entirely
-bpy.ops.wm.open_mainfile(filepath="/home/brano/Projects/3D-FRONT-ToolBox/empty.blend")
+bpy.ops.wm.open_mainfile(filepath="/home/brano/Projects/thesis/empty.blend")
 scn = bpy.context.scene
 
 print("Loading room mesh.")
 obj_files = []
-for root, dirs, files in os.walk("/home/brano/Projects/3D-FRONT-ToolBox/scripts/outputs/5ca4c392-dcc6-4dc1-a607-44b66785ac6d/LivingDiningRoom-48804"):
+for root, dirs, files in os.walk("/home/brano/Projects/thesis/outputs/5ca4c392-dcc6-4dc1-a607-44b66785ac6d/LivingDiningRoom-48804"):
     for name in files:
         if name.endswith(".ply"):
             bpy.ops.import_mesh.ply(filepath=os.path.join(root, name))
@@ -53,13 +54,13 @@ for obj in bpy.data.objects:
 # Get locations from file
 print("Loading locations file")
 locations = []
-with open("/home/brano/Projects/3D-FRONT-ToolBox/docker2/output/LivingDiningRoom-48804.txt") as loc_f:
+with open("/home/brano/Projects/thesis/docker/output/LivingDiningRoom-48804_full.txt") as loc_f:
     lines = loc_f.readlines()
     for line in lines:
         x = line.strip().split(" ")
         locations.append((float(x[0]), 1.0, float(x[2])))
-rotation_start = 60
-rotation_end = 120
+rotation_start = -30
+rotation_end = 30
 
 # Add camera (lidar)
 print("Adding scanner to scene")
@@ -70,31 +71,44 @@ scanner_obj.velodyne_model = VLP16
 scanner_obj.ref_dist = scanner_obj.velodyne_ref_dist
 scanner_obj.ref_limit = scanner_obj.velodyne_ref_limit
 scanner_obj.ref_slope = scanner_obj.velodyne_ref_slope
-scanner_obj.local_coordinates = True
+scanner_obj.local_coordinates = False
 
 scn.objects.link(scanner_obj)
 scn.camera = scanner_obj
 bpy.context.scene.objects.active = scanner_obj
 
+
+# Set up animation
 for i, loc in enumerate(locations):
     # Set scanner to location
     scanner_obj.location = loc
-    print(f"Scanner at location: {loc}")
-
-    blensor.evd.output_labels = True
-    blensor.evd.frame_counter = frame_start
+    scanner_obj.keyframe_insert(data_path="location", frame=sweep_duration * i)
 
     scanner_obj.rotation_euler = (radians(rotation_start), 0, 0)
-    scanner_obj.keyframe_insert(data_path="rotation_euler", frame=frame_start)
+    scanner_obj.keyframe_insert(data_path="rotation_euler", frame=sweep_duration * i)
 
     scanner_obj.rotation_euler = (radians(rotation_end), 0, 0)
-    scanner_obj.keyframe_insert(data_path="rotation_euler", frame=frame_end)
+    scanner_obj.keyframe_insert(data_path="rotation_euler", frame=sweep_duration * (i + 1) - 1)
 
+    print("Scanning")
+
+
+for fcurve in scanner_obj.animation_data.action.fcurves:
+    if fcurve.data_path == 'location':
+        for kfp in fcurve.keyframe_points:
+            kfp.interpolation = 'CONSTANT'
+    else:
+        for kfp in fcurve.keyframe_points:
+            kfp.interpolation = 'BEZIER'
+
+# Do scanning
+blensor.evd.output_labels = True
+for i, loc in enumerate(locations):
     print("Scanning")
     # The world transformation might need to be a parameter in the future (for connecting to our existing code for getting the transformation in real life)
     blensor.blendodyne.scan_range(scanner_obj,
-                                  filename=f"/home/brano/Projects/3D-FRONT-ToolBox/synth_scans/test_{i}.evd",
-                                  frame_start=frame_start,
-                                  frame_end=frame_end,
+                                  filename=f"/home/brano/Projects/thesis/scans/test_{i}.evd",
+                                  frame_start=sweep_duration * i,
+                                  frame_end=sweep_duration * (i + 1) - 1,
                                   world_transformation=scanner_obj.matrix_world)
 

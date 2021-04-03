@@ -38,6 +38,15 @@ RUN conda install -y -c conda-forge shapely
 RUN conda install -y -c conda-forge pillow
 RUN conda install -y -c conda-forge rtree
 
+# These are all needed for simplify_quadratic_decimation
+RUN conda install -y -c open3d-admin open3d
+RUN apt-get install -y libgl1-mesa-glx
+RUN conda install -y -c conda-forge scikit-learn
+RUN conda install -y -c anaconda pyyaml
+RUN conda install -y -c conda-forge addict
+RUN conda install -y -c conda-forge pandas
+RUN conda install -y -c conda-forge plyfile
+
 WORKDIR /
 COPY pipeline.py /
 ENTRYPOINT ["python", "pipeline.py"]

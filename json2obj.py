@@ -182,6 +182,5 @@ for m in files:
 
             if len(meshes) > 0:
                 temp = trimesh.util.concatenate(meshes)
-                #temp.export(args.save_path+'/'+ m[:-5] + '/' + room_id + '/mesh.obj')
-                #temp.export(args.save_path+'/'+ m[:-5] + '/' + room_id + '/' + room_id + '.ply')
+                temp.export(args.save_path+'/'+ m[:-5] + '/' + room_id + '/' + room_id + '_full.ply')
 
