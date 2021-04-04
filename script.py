@@ -27,7 +27,7 @@ print("Loading room mesh.")
 obj_files = []
 for root, dirs, files in os.walk("/home/brano/Projects/thesis/outputs/5ca4c392-dcc6-4dc1-a607-44b66785ac6d/LivingDiningRoom-48804"):
     for name in files:
-        if name.endswith(".ply"):
+        if name.endswith(".ply") and not name.endswith("_full.ply"):
             bpy.ops.import_mesh.ply(filepath=os.path.join(root, name))
 
 
@@ -35,6 +35,9 @@ for obj in bpy.data.objects:
     color = obj.data.vertex_colors[0].data[0].color
     mat = bpy.data.materials.new(name=obj.name)
     mat.diffuse_color = (color[0], color[1], color[2])
+    mat.specular_color = (color[0], color[1], color[2])
+    mat.use_vertex_color_paint = True
+    mat.use_shadeless = True
     obj.data.materials.append(mat)
 # room = bpy.context.scene.objects.active
 # mat.use_nodes=True
