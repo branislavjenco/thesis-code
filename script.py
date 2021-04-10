@@ -25,7 +25,7 @@ scn = bpy.context.scene
 
 print("Loading room mesh.")
 obj_files = []
-for root, dirs, files in os.walk("/home/brano/Projects/thesis/outputs/5ca4c392-dcc6-4dc1-a607-44b66785ac6d/LivingDiningRoom-48804"):
+for root, dirs, files in os.walk("/home/brano/Projects/thesis/meshes/5ca4c392-dcc6-4dc1-a607-44b66785ac6d/LivingDiningRoom-48804"):
     for name in files:
         if name.endswith(".ply") and not name.endswith("_full.ply"):
             bpy.ops.import_mesh.ply(filepath=os.path.join(root, name))

@@ -12,23 +12,33 @@ from shutil import copyfile
 def get_random_rgb():
     return (randint(0, 255), randint(0, 255), randint(0, 255))
 
+RED = (255, 0, 0)
+BLUE = (0, 0, 255)
+GREEN = (0, 255, 0)
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+CEILING_COLOR = RED
+FLOOR_COLOR = GREEN
+WALL_COLOR = BLUE
+IRRELEVANT_COLOR = BLACK
+
 color_map = {
-    "Baseboard": get_random_rgb(),
-    "Cabinet": get_random_rgb(),
-    "Ceiling": [255, 0, 0],
-    "CustomizedCeiling": [0,0,0], # this is the various moulding around the ceiling
-    "CustomizedFeatureWall": [255, 255, 255], # sometimes the inner walls are this instead of WallInner
-    "Door": get_random_rgb(),
-    "Floor": [0, 255, 0],
-    "Hole": get_random_rgb(),
-    "Pocket": get_random_rgb(),
-    "WallBottom": [255, 0, 255],
-    "WallInner": [0, 0, 255],
-    "WallOuter": [0, 255, 255],
-    "WallTop": [255, 255, 0],
-    "Window": get_random_rgb(),
-    "LightBand": get_random_rgb(),
-    "SlabSide": get_random_rgb()
+    "Baseboard": IRRELEVANT_COLOR,
+    "Cabinet": IRRELEVANT_COLOR,
+    "Ceiling": CEILING_COLOR,
+    "CustomizedCeiling": IRRELEVANT_COLOR, # this is the various moulding around the ceiling
+    "CustomizedFeatureWall": WALL_COLOR, # sometimes the inner walls are this instead of WallInner
+    "Door": IRRELEVANT_COLOR,
+    "Floor": FLOOR_COLOR,
+    "Hole": IRRELEVANT_COLOR,
+    "Pocket": IRRELEVANT_COLOR,
+    "WallBottom": IRRELEVANT_COLOR,
+    "WallInner": WALL_COLOR,
+    "WallOuter": IRRELEVANT_COLOR,
+    "WallTop": IRRELEVANT_COLOR,
+    "Window": IRRELEVANT_COLOR,
+    "LightBand": IRRELEVANT_COLOR,
+    "SlabSide": IRRELEVANT_COLOR
 }
 
 def split_path(paths):
