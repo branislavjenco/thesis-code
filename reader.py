@@ -24,8 +24,14 @@ class EvdReader:
             data = struct.unpack("i", self.file_handle.read(4))
             self.rays_in_scan = data[0]
             if data[0] == -1:
+                # This means we got to the end of the file
                 return data[0]
+            if data[0] == 0:
+                # This means that for some reason there are 0 scans in the next "block"
+                # We should just ignore this and have a look at the next 4 bytes
+                return self.get_next_ray()
             self.ray_index = 0
+        # 14 doubles (8 bytes) and one long long integer (8 bytes)
         ray = struct.unpack("14dQ", self.file_handle.read(15 * 8))
         self.ray_index += 1
         self.total_count += 1
