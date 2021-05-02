@@ -135,26 +135,26 @@ class PCLWriter:
             pcl_noisy.write("%f %f %f %.15e\n" % (float(e[8]), float(e[9]), float(e[10]), values[0]))
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument(
-    '-f',
-    help = 'EVD file to read'
-)
-parser.add_argument(
-    '-g',
-    help = 'glob - use a wildcard to specify multiple evd files, these will be made into a single pcl file'
-)
-
-args = parser.parse_args()
-f = args.f
-g = args.g
-
-if g:
-    reader = MultiEvdReader(sorted(glob.glob(g)))
-    writer = PCLWriter(f"{os.path.splitext(g)[0]}")
-    writer.write_pcl_file(reader.get_rays())
-elif f:
-    reader = EvdReader(f)
-    writer = PCLWriter(f"{os.path.splitext(f)[0]}")
-    writer.write_pcl_file(reader.get_rays())
-
+# parser = argparse.ArgumentParser()
+# parser.add_argument(
+#     '-f',
+#     help = 'EVD file to read'
+# )
+# parser.add_argument(
+#     '-g',
+#     help = 'glob - use a wildcard to specify multiple evd files, these will be made into a single pcl file'
+# )
+#
+# args = parser.parse_args()
+# f = args.f
+# g = args.g
+#
+# if g:
+#     reader = MultiEvdReader(sorted(glob.glob(g)))
+#     writer = PCLWriter(f"{os.path.splitext(g)[0]}")
+#     writer.write_pcl_file(reader.get_rays())
+# elif f:
+#     reader = EvdReader(f)
+#     writer = PCLWriter(f"{os.path.splitext(f)[0]}")
+#     writer.write_pcl_file(reader.get_rays())
+#

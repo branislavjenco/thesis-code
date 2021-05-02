@@ -13,6 +13,15 @@ from math import radians
 
 # the real scans were roughly 1.6 meters wide and 2.2 meters tall
 
+VLP16 = "vlp16"
+scn = bpy.context.scene
+
+sweep_duration = 96
+runs_per_distance = 3
+scan_type = "floor"
+scanner_locations = ((0, -5, 1), (0, -4, 1), (0, -3, 1) ,(0, -2, 1) ,(0, -1, 1))
+rotation_start = -60 + 90
+rotation_end = 60 + 90
 
 def make_plane(name="plane", vertices=None):
     if vertices is None:
@@ -28,7 +37,11 @@ def make_plane(name="plane", vertices=None):
 
 
 def remove_object(name):
-    bpy.data.objects.remove(bpy.data.objects[name], do_unlink=True)
+    try:
+       o = bpy.data.objects[name]
+    except KeyError:
+        return
+    bpy.data.objects.remove(o, do_unlink=True)
 
 
 def add_wall():
@@ -85,12 +98,14 @@ def add_scanner():
 def scan_and_save(scanner_obj, runs, scan_type):
     print("Scanning")
     blensor.evd.output_labels = True
-    add_wall()
+    if scan_type == "wall":
+        add_wall()
     for run in range(runs):
         for i, loc in enumerate(scanner_locations):
             # The world transformation might need to be a parameter in the future (for connecting to our existing code for getting the transformation in real life)
             dist = -loc[1]
-            assert_floor(dist) # move the floor according to where we now put the sensor (so that we don't have to crop the point cloud later)
+            if scan_type == "floor":
+                assert_floor(dist) # move the floor according to where we now put the sensor (so that we don't have to crop the point cloud later)
             blensor.blendodyne.scan_range(scanner_obj,
                                           filename=f"/home/brano/Projects/thesis/virtual_error_measurements/{dist}m_{run}_{scan_type}.evd",
                                           frame_start=sweep_duration * i,
@@ -98,19 +113,11 @@ def scan_and_save(scanner_obj, runs, scan_type):
                                           world_transformation=scanner_obj.matrix_world, output_laser_id_as_color=True)
 
 
-frame_start = 0
-frame_end = 72
-sweep_duration = 72
-VLP16 = "vlp16"
-runs_per_distance = 3
-scan_type = "floor"
+
 
 # Clear scene entirely
 bpy.ops.wm.open_mainfile(filepath="/home/brano/Projects/thesis/empty.blend")
-scn = bpy.context.scene
-scanner_locations = ((0, -5, 1), (0, -4, 1), (0, -3, 1) ,(0, -2, 1) ,(0, -1, 1))
-rotation_start = -60 + 90
-rotation_end = 60 + 90
+
 
 scanner_obj = add_scanner()
 scan_and_save(scanner_obj, runs_per_distance, scan_type)

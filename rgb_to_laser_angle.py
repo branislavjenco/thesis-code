@@ -2,6 +2,7 @@
 # their angle w.r.t to the sensor as opposed to the rgb color that we captured by Blensor
 import math
 import argparse
+import glob
 
 laser_angles_vlp16 = [-15, 1, -13, 3, -11, 5, -9, 7, -7, 9, -5, 11, -3, 13, -1, 15]
 
@@ -24,20 +25,22 @@ def color_to_laser_angle(color):
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
-    '-f',
-    help = 'PCD file to read'
+    '-g',
+    help = 'glob - use a wildcard to specify multiple txt files'
 )
 
 args = parser.parse_args()
-f = args.f
+g = args.g
 
-output_filename = f[:-4] + "_with_angles.txt"
-
-with open(f) as input_file:
-    with open(output_filename, "w") as output_file:
-        for line in input_file.readlines():
-            tokens = line.split(" ")
-            tokens[5] = str(color_to_laser_angle(int(tokens[5])))
-            output_file.write(" ".join(tokens) + "\n")
+files = sorted(glob.glob(g))
+for filename in files:
+    if filename.endswith(".txt"):
+        output_filename = filename[:-4] + "_with_angles.txt"
+        with open(filename) as input_file:
+            with open(output_filename, "w") as output_file:
+                for line in input_file.readlines():
+                    tokens = line.split(" ")
+                    tokens[5] = str(color_to_laser_angle(int(tokens[5])))
+                    output_file.write(" ".join(tokens) + "\n")
 
 
