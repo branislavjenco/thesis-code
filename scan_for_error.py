@@ -14,14 +14,14 @@ from math import radians
 # the real scans were roughly 1.6 meters wide and 2.2 meters tall
 
 VLP16 = "vlp16"
-scn = bpy.context.scene
-
-sweep_duration = 96
-runs_per_distance = 3
-scan_type = "floor"
-scanner_locations = ((0, -5, 1), (0, -4, 1), (0, -3, 1) ,(0, -2, 1) ,(0, -1, 1))
+bpy.context.scene.render.fps = 120
+sweep_duration = 120 * 4
+runs_per_distance = 1
+scan_types = ["wall", "floor"]
+scanner_locations = ((0, 5, 1), (0, 4, 1), (0, 3, 1) ,(0, 2, 1) ,(0, 1, 1))
 rotation_start = -60 + 90
 rotation_end = 60 + 90
+
 
 def make_plane(name="plane", vertices=None):
     if vertices is None:
@@ -52,7 +52,7 @@ def add_wall():
 
 def assert_floor(sensor_distance):
     remove_object("floor")
-    floor = make_plane("floor", vertices=[(-0.8, -sensor_distance, 0), (-0.8, 0, 0), (0.8, 0, 0), (0.8, -sensor_distance, 0)])
+    floor = make_plane("floor", vertices=[(-0.8, sensor_distance, 0), (-0.8, 0, 0), (0.8, 0, 0), (0.8, sensor_distance, 0)])
     floor.name = "floor"
 
 
@@ -67,8 +67,8 @@ def add_scanner():
     scanner_obj.ref_slope = scanner_obj.velodyne_ref_slope
     scanner_obj.local_coordinates = False
 
-    scn.objects.link(scanner_obj)
-    scn.camera = scanner_obj
+    bpy.context.scene.objects.link(scanner_obj)
+    bpy.context.scene.camera = scanner_obj
     bpy.context.scene.objects.active = scanner_obj
 
     # Set up animation
@@ -77,10 +77,10 @@ def add_scanner():
         scanner_obj.location = loc
         scanner_obj.keyframe_insert(data_path="location", frame=sweep_duration * i)
 
-        scanner_obj.rotation_euler = (radians(rotation_start), 0, 0)
+        scanner_obj.rotation_euler = (radians(rotation_start), 0, radians(180))
         scanner_obj.keyframe_insert(data_path="rotation_euler", frame=sweep_duration * i)
 
-        scanner_obj.rotation_euler = (radians(rotation_end), 0, 0)
+        scanner_obj.rotation_euler = (radians(rotation_end), 0, radians(180))
         scanner_obj.keyframe_insert(data_path="rotation_euler", frame=sweep_duration * (i + 1) - 1)
 
     # Set up animation curves
@@ -103,7 +103,7 @@ def scan_and_save(scanner_obj, runs, scan_type):
     for run in range(runs):
         for i, loc in enumerate(scanner_locations):
             # The world transformation might need to be a parameter in the future (for connecting to our existing code for getting the transformation in real life)
-            dist = -loc[1]
+            dist = loc[1]
             if scan_type == "floor":
                 assert_floor(dist) # move the floor according to where we now put the sensor (so that we don't have to crop the point cloud later)
             blensor.blendodyne.scan_range(scanner_obj,
@@ -113,13 +113,8 @@ def scan_and_save(scanner_obj, runs, scan_type):
                                           world_transformation=scanner_obj.matrix_world, output_laser_id_as_color=True)
 
 
-
-
-# Clear scene entirely
-bpy.ops.wm.open_mainfile(filepath="/home/brano/Projects/thesis/empty.blend")
-
-
-scanner_obj = add_scanner()
-scan_and_save(scanner_obj, runs_per_distance, scan_type)
-
+for scan_type in scan_types:
+    bpy.ops.wm.open_mainfile(filepath="/home/brano/Projects/thesis/empty.blend")
+    scanner_obj = add_scanner()
+    scan_and_save(scanner_obj, runs_per_distance, scan_type)
 

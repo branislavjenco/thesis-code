@@ -23,24 +23,30 @@ def color_to_laser_id(color):
 def color_to_laser_angle(color):
     return laser_angles_vlp16[color_to_laser_id(color)]
 
-parser = argparse.ArgumentParser()
-parser.add_argument(
-    '-g',
-    help = 'glob - use a wildcard to specify multiple txt files'
-)
 
-args = parser.parse_args()
-g = args.g
+def transform_colors_to_laser_angles(g):
+    files = sorted(glob.glob(g))
+    for filename in files:
+        if filename.endswith(".txt"):
+            output_filename = filename[:-4] + "_with_angles.txt"
+            with open(filename) as input_file:
+                with open(output_filename, "w") as output_file:
+                    for line in input_file.readlines():
+                        tokens = line.split(" ")
+                        tokens[5] = str(color_to_laser_angle(int(tokens[5])))
+                        output_file.write(" ".join(tokens) + "\n")
 
-files = sorted(glob.glob(g))
-for filename in files:
-    if filename.endswith(".txt"):
-        output_filename = filename[:-4] + "_with_angles.txt"
-        with open(filename) as input_file:
-            with open(output_filename, "w") as output_file:
-                for line in input_file.readlines():
-                    tokens = line.split(" ")
-                    tokens[5] = str(color_to_laser_angle(int(tokens[5])))
-                    output_file.write(" ".join(tokens) + "\n")
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '-g',
+        help = 'glob - use a wildcard to specify multiple txt files'
+    )
+    args = parser.parse_args()
+    g = args.g
+    transform_colors_to_laser_angles(g)
+
+
 
 
