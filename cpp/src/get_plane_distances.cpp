@@ -222,9 +222,6 @@ main(int argc, char **argv)
 
     std::cout << "Loading point cloud" << std::endl;
     pcl::io::loadPCDFile<pcl::PointXYZL>(input_file, *cloud);
-    for (auto &point: cloud->points) {
-        std::cout << "Point label: " << point.label << std::endl;
-    }
 
     if (skip) {
         cropped = cloud;
