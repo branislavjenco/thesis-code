@@ -14,6 +14,8 @@ add_definitions(${PCL_DEFINITIONS})
 
 add_executable(get_plane_distances src/get_plane_distances.cpp)
 add_executable(set_laser_id_as_label src/set_laser_id_as_label.cpp)
+add_executable(get_centroids src/get_centroids.cpp)
 
 target_link_libraries(get_plane_distances ${PCL_LIBRARIES} ${Boost_LIBRARIES})
 target_link_libraries(set_laser_id_as_label ${PCL_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(get_centroids ${PCL_LIBRARIES} ${Boost_LIBRARIES})
