@@ -4,3 +4,4 @@ cmake-build-release/
 
 # Jupyter cache
 .ipynb_checkpoints
+*.pcd
