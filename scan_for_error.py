@@ -17,8 +17,10 @@ VLP16 = "vlp16"
 bpy.context.scene.render.fps = 120
 sweep_duration = 120 * 4
 runs_per_distance = 1
-scan_types = ["wall", "floor"]
-scanner_locations = ((0, 5, 1), (0, 4, 1), (0, 3, 1) ,(0, 2, 1) ,(0, 1, 1))
+# scan_types = ["wall", "floor"]
+scan_types = ["wall"]
+# scanner_locations = ((0, 5, 1), (0, 4, 1), (0, 3, 1) ,(0, 2, 1) ,(0, 1, 1))
+scanner_locations = [(0, 2, 1)]
 rotation_start = -60 + 90
 rotation_end = 60 + 90
 
@@ -107,7 +109,7 @@ def scan_and_save(scanner_obj, runs, scan_type):
             if scan_type == "floor":
                 assert_floor(dist) # move the floor according to where we now put the sensor (so that we don't have to crop the point cloud later)
             blensor.blendodyne.scan_range(scanner_obj,
-                                          filename=f"/home/brano/Projects/thesis/virtual_error_measurements/{dist}m_{run}_{scan_type}.evd",
+                                          filename=f"/home/brano/Projects/thesis/virtual_error_measurements/5m_various_errors_comparison/different_noise_mu_per_laser_double_stddev/{dist}m_{run}_{scan_type}.evd",
                                           frame_start=sweep_duration * i,
                                           frame_end=sweep_duration * (i + 1) - 1,
                                           world_transformation=scanner_obj.matrix_world, output_laser_id_as_color=True)

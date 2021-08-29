@@ -15,6 +15,8 @@
 #include <pcl/segmentation/extract_clusters.h>
 #include <pcl/sample_consensus/ransac.h>
 #include <pcl/sample_consensus/sac_model_plane.h>
+#include <pcl/filters/project_inliers.h>
+
 
 #include <iostream>
 #include <cmath>
@@ -32,7 +34,7 @@ struct classcomp
 };
 
 void
-visualize(const point_cloud::Ptr &cloud, const Eigen::VectorXf& plane_parameters)
+visualize(const point_cloud::Ptr &cloud, const pcl::ModelCoefficients::Ptr plane_coeff)
 {
     std::cout << "Visualizing" << std::endl;
     pcl::visualization::PCLVisualizer viz;
@@ -40,13 +42,24 @@ visualize(const point_cloud::Ptr &cloud, const Eigen::VectorXf& plane_parameters
     pcl::visualization::PointCloudColorHandlerLabelField<pcl::PointXYZL> color(cloud);
     viz.addPointCloud<pcl::PointXYZL>(cloud, color, "point cloud");
     viz.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "point cloud");
-    pcl::ModelCoefficients plane_coeff;
-    plane_coeff.values.resize (4);
-    plane_coeff.values[0] = plane_parameters.x ();
-    plane_coeff.values[1] = plane_parameters.y ();
-    plane_coeff.values[2] = plane_parameters.z ();
-    plane_coeff.values[3] = plane_parameters.w ();
-    viz.addPlane(plane_coeff);
+    viz.addPlane(*plane_coeff);
+    viz.addCoordinateSystem();
+    while (!viz.wasStopped ())
+    {
+        viz.spinOnce ();
+    }
+    viz.close();
+}
+
+void
+visualize(const point_cloud::Ptr &cloud)
+{
+    std::cout << "Visualizing" << std::endl;
+    pcl::visualization::PCLVisualizer viz;
+    viz.setBackgroundColor(255, 255, 255);
+    pcl::visualization::PointCloudColorHandlerLabelField<pcl::PointXYZL> color(cloud);
+    viz.addPointCloud<pcl::PointXYZL>(cloud, color, "point cloud");
+    viz.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "point cloud");
     while (!viz.wasStopped ())
     {
         viz.spinOnce ();
@@ -72,6 +85,7 @@ fit_plane(const point_cloud::Ptr &cloud)
 
     std::cout << "Computing plane" << std::endl;
     ransac.computeModel();
+    ransac.refineModel();
     Eigen::VectorXf coeff;
     ransac.getModelCoefficients(coeff);
     return coeff;
@@ -122,28 +136,59 @@ main(int argc, char **argv)
     // Distributing into new point clouds based on label
     distribute_by_label(cloud, 16, laser_clouds);
 
-    // Fit a plane to the original point cloud
+    // Fit a plane to the original point cloud, get it's model coeffs
     auto plane_parameters = fit_plane(cloud);
-    visualize(cloud, plane_parameters);
+    pcl::ModelCoefficients::Ptr plane_coeff(new pcl::ModelCoefficients ());
+    plane_coeff->values.resize (4);
+    plane_coeff->values[0] = plane_parameters.x ();
+    plane_coeff->values[1] = plane_parameters.y ();
+    plane_coeff->values[2] = plane_parameters.z ();
+    plane_coeff->values[3] = plane_parameters.w ();
+
+    // Add a 90deg rotated plane
+    pcl::ModelCoefficients::Ptr rotated_plane_coeff(new pcl::ModelCoefficients ());
+    rotated_plane_coeff->values.resize (4);
+    rotated_plane_coeff->values[0] = plane_parameters.x ();
+    rotated_plane_coeff->values[1] = plane_parameters.y ();
+    rotated_plane_coeff->values[2] = plane_parameters.z ();
+    rotated_plane_coeff->values[3] = plane_parameters.w ();
+    Eigen::Affine3f transform = Eigen::Affine3f::Identity();
+    transform.rotate(Eigen::AngleAxisf((90.0*M_PI) / 180, Eigen::Vector3f::UnitZ())); // Y for floor, Z for wall
+    pcl::transformPlane(rotated_plane_coeff, plane_coeff, transform); // For some reason, it seems like the in/out coeffs are switched
+
 
     // Get centroids
     std::vector<std::vector<double>> centroid_distances_by_laser;
     int c = 0;
     for (auto &laser_cloud: laser_clouds)
     {
+        point_cloud::Ptr laser_cloud_plane_proj(new point_cloud);
+        pcl::ProjectInliers<pcl::PointXYZL> proj;
+        proj.setModelType (pcl::SACMODEL_PLANE);
+        proj.setInputCloud (laser_cloud);
+        proj.setModelCoefficients (plane_coeff);
+        proj.filter (*laser_cloud_plane_proj);
+
+        point_cloud::Ptr laser_cloud_line_proj(new point_cloud);
+        pcl::ProjectInliers<pcl::PointXYZL> proj2;
+        proj.setModelType (pcl::SACMODEL_PLANE);
+        proj.setInputCloud (laser_cloud_plane_proj);
+        proj.setModelCoefficients (rotated_plane_coeff);
+        proj.filter (*laser_cloud_line_proj);
 
         // Segment individual clouds
         pcl::search::KdTree<pcl::PointXYZL>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZL>);
-        tree->setInputCloud(laser_cloud);
+        tree->setInputCloud(laser_cloud_line_proj);
         pcl::EuclideanClusterExtraction<pcl::PointXYZL> extraction;
-        extraction.setInputCloud(laser_cloud);
+        extraction.setInputCloud(laser_cloud_line_proj);
         std::vector<pcl::PointIndices> cluster_indices;
-        extraction.setClusterTolerance(0.04); // found works best with around 0.04 with virtual scan, 0.06 for real
+        extraction.setClusterTolerance(0.02); // found works best with around 0.04 with virtual scan, 0.06 for real
         extraction.setSearchMethod(tree);
         extraction.extract(cluster_indices);
         std::cout << "Total number of points " << laser_cloud->size() << std::endl;
         std::cout << "Num of clusters " << cluster_indices.size() << std::endl;
         std::vector<point_cloud::Ptr> cluster_clouds;
+
 
         // Label each cluster in the cloud based
         int count = 0;
@@ -156,6 +201,12 @@ main(int argc, char **argv)
             count = count + 1;
         }
 
+        if (c < 1) {
+            visualize(laser_cloud, rotated_plane_coeff);
+            visualize(laser_cloud_plane_proj, rotated_plane_coeff);
+            visualize(laser_cloud_line_proj, rotated_plane_coeff);
+            c++;
+        }
         // Distribute based on the new label
         distribute_by_label(laser_cloud, cluster_indices.size(), cluster_clouds);
 
@@ -166,6 +217,13 @@ main(int argc, char **argv)
             pcl::PointXYZL centroid;
             pcl::computeCentroid<pcl::PointXYZL, pcl::PointXYZL>(*cc, centroid);
             centroids.push_back(centroid);
+        }
+
+        point_cloud::Ptr centroid_cloud(new point_cloud);
+        for (auto &c: centroids)
+        {
+            std::cout << c.getVector4fMap() << std::endl;
+            centroid_cloud->push_back(c);
         }
 
         // Sort by the Z coordinate (this only works for wall)

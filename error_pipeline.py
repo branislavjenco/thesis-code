@@ -3,11 +3,11 @@ from evds_to_pcds import evds_to_pcds
 from get_distances import get_distances
 from rgb_to_laser_angle import transform_colors_to_laser_angles
 
-d = "/home/brano/Projects/thesis/virtual_error_measurements"
-pcd_glob = "/home/brano/Projects/thesis/virtual_error_measurements/*.pcd"
-txt_glob = "/home/brano/Projects/thesis/virtual_error_measurements/*.txt"
-blender = "/home/brano/Projects/blensor/cmake-build-debug/bin/blender"
-error_script = "/home/brano/Projects/thesis/scan_for_error.py"
+d = "/home/branislav/repos/thesis/virtual_error_measurements"
+pcd_glob = "/home/branislav/repos/thesis/virtual_error_measurements/*.pcd"
+txt_glob = "/home/branislav/repos/thesis/virtual_error_measurements/*.txt"
+blender = "/home/branislav/repos/blensor/cmake-build-debug/bin/blender"
+error_script = "/home/branislav/repos/thesis/scan_for_error.py"
 
 
 # 1. run the virtual scans

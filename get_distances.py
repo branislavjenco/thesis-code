@@ -4,7 +4,7 @@ import os
 import glob
 import subprocess
 
-get_plane_distances = "/home/brano/Projects/github_indoor++/cmake-build-release/get_plane_distances"
+get_plane_distances = "./cpp/cmake-build-debug/get_plane_distances"
 
 
 def get_distances(g):
