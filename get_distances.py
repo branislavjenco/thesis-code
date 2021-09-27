@@ -12,6 +12,7 @@ def get_distances(g):
     for filename in files:
         if filename.endswith(".pcd"):
             distances_file = f"{os.path.splitext(filename)[0]}.txt"
+            # run with -s parameter to skip cropping
             subprocess.run([get_plane_distances, "-f", filename, "-o", distances_file, "-s", "1"])
 
 

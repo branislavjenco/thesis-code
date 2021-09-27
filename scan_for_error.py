@@ -107,7 +107,9 @@ def scan_and_save(scanner_obj, runs, scan_type):
             # The world transformation might need to be a parameter in the future (for connecting to our existing code for getting the transformation in real life)
             dist = loc[1]
             if scan_type == "floor":
-                assert_floor(dist) # move the floor according to where we now put the sensor (so that we don't have to crop the point cloud later)
+                # The floor size depends to where we now put the sensor
+                # (so that we don't have to crop the point cloud later)
+                assert_floor(dist)
             blensor.blendodyne.scan_range(scanner_obj,
                                           filename=f"/home/brano/Projects/thesis/virtual_error_measurements/5m_various_errors_comparison/different_noise_mu_per_laser_double_stddev/{dist}m_{run}_{scan_type}.evd",
                                           frame_start=sweep_duration * i,
