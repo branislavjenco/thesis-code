@@ -17,10 +17,10 @@ VLP16 = "vlp16"
 bpy.context.scene.render.fps = 120
 sweep_duration = 120 * 4
 runs_per_distance = 1
-# scan_types = ["wall", "floor"]
-scan_types = ["wall"]
-# scanner_locations = ((0, 5, 1), (0, 4, 1), (0, 3, 1) ,(0, 2, 1) ,(0, 1, 1))
-scanner_locations = [(0, 2, 1)]
+scan_types = ["wall", "floor"]
+# scan_types = ["wall"]
+scanner_locations = ((0, 5, 1), (0, 4, 1), (0, 3, 1) ,(0, 2, 1) ,(0, 1, 1))
+# scanner_locations = [(0, 2, 1)]
 rotation_start = -60 + 90
 rotation_end = 60 + 90
 
@@ -110,15 +110,25 @@ def scan_and_save(scanner_obj, runs, scan_type):
                 # The floor size depends to where we now put the sensor
                 # (so that we don't have to crop the point cloud later)
                 assert_floor(dist)
+            params = blensor.blendodyne.vlp16_parameters
+            print(params)
             blensor.blendodyne.scan_range(scanner_obj,
-                                          filename=f"/home/brano/Projects/thesis/virtual_error_measurements/5m_various_errors_comparison/different_noise_mu_per_laser_double_stddev/{dist}m_{run}_{scan_type}.evd",
+                                          angle_resolution=params["angle_resolution"],
+                                          rotation_speed=params["rotation_speed"],
+                                          max_distance=params["max_dist"],
+                                          noise_mu=params["noise_mu"],
+                                          noise_sigma=params["noise_sigma"],
+                                          filename=f"/home/branislav/repos/thesis/virtual_error_measurements/default_blensor_error_without_correction/{dist}m_{run}_{scan_type}.evd",
                                           frame_start=sweep_duration * i,
                                           frame_end=sweep_duration * (i + 1) - 1,
-                                          world_transformation=scanner_obj.matrix_world, output_laser_id_as_color=True)
+                                          world_transformation=scanner_obj.matrix_world,
+                                          output_laser_id_as_color=True,
+                                          apply_vertical_correction=False,
+                                          add_beam_divergence=False)
 
 
 for scan_type in scan_types:
-    bpy.ops.wm.open_mainfile(filepath="/home/brano/Projects/thesis/empty.blend")
+    bpy.ops.wm.open_mainfile(filepath="/home/branislav/repos/thesis/empty.blend")
     scanner_obj = add_scanner()
     scan_and_save(scanner_obj, runs_per_distance, scan_type)
 

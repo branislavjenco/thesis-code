@@ -35,6 +35,8 @@ def compute_laser_deviations(measurement):
     for angle in sorted_angles:
         # get distances and get their stddev per laser
         distances_for_angle = measurement[np.where(measurement[:,5] == angle)][:, 0]
+        if len(distances_for_angle) == 0:
+            distances_for_angle = [0]
         deviations_per_laser[laser_angle_to_id[angle]] = np.std(distances_for_angle)
     return deviations_per_laser
 
