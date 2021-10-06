@@ -43,11 +43,8 @@ main(int argc, char **argv)
     point_cloud::Ptr cloud(new point_cloud);
 
     char opt_f[] = "-f";
-    char opt_o[] = "-o";
     std::string input_file;
-    std::string output_file;
     pcl::console::parse_argument(argc, (char **) argv, opt_f, input_file);
-    pcl::console::parse_argument(argc, (char **) argv, opt_o, output_file);
 
     std::cout << "Loading point cloud" << std::endl;
     pcl::io::loadPCDFile<pcl::PointXYZL>(input_file, *cloud);

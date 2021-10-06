@@ -30,7 +30,6 @@ for kind in ["wall", "floor"]:
         averages = np.zeros(16)
         r = re.compile(f"{distance+1}m_\d_{kind}_with_angles_stddevs.txt$")
         current_distance_files = list(filter(r.search, files))
-        print(current_distance_files)
         for run in range(0, len(current_distance_files)):
             stddevs = load_stddev_file(current_distance_files[run])
             averages = averages + stddevs
