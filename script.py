@@ -1,5 +1,7 @@
 import bpy
+import sys
 import os
+import argparse
 import blensor
 from math import radians
 """
@@ -14,31 +16,69 @@ works such that it writes PCL and evd, however it doesn't have the extension...
 Info on EVD format is here:
 https://www.blensor.org/file_format.html
 """
+# get the args passed to blender after "--", all of which are ignored by
+# blender so scripts may receive their own arguments
+argv = sys.argv
+
+if "--" not in argv:
+    argv = []  # as if no args are passed
+else:
+    argv = argv[argv.index("--") + 1:]  # get all args after "--"
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    '-f',
+    help = 'Room PLY file'
+)
+
+parser.add_argument(
+    '-p',
+    help = 'Room TXT file for scanner positions'
+)
+
+parser.add_argument(
+    '-o',
+    help = 'Output folder',
+    default="./"
+
+)
+
+args = parser.parse_args(argv)
+room_filepath = args.f
+scanner_positions_filepath = args.p
+output_folder_path = args.o
+
+
 frame_start = 0
 frame_end = 72
 sweep_duration = 72
 VLP16 = "vlp16"
 
 # Clear scene entirely
-bpy.ops.wm.open_mainfile(filepath="/home/brano/Projects/thesis/empty.blend")
+bpy.ops.wm.open_mainfile(filepath="/home/branisj/thesis/empty.blend")
 scn = bpy.context.scene
 
 print("Loading room mesh.")
 obj_files = []
-for root, dirs, files in os.walk("/home/brano/Projects/thesis/meshes/5ca4c392-dcc6-4dc1-a607-44b66785ac6d/LivingDiningRoom-48804"):
-    for name in files:
-        if name.endswith(".ply") and not name.endswith("_full.ply"):
-            bpy.ops.import_mesh.ply(filepath=os.path.join(root, name))
 
+# this was there for when the room is split into several different files
+#for root, dirs, files in os.walk("/home/branisj/3D-FRONT-ToolBox/scripts/output/Bedroom-6979.ply"):
+#    for name in files:
+#        if name.endswith(".ply") and not name.endswith("_full.ply"):
+#            bpy.ops.import_mesh.ply(filepath=os.path.join(root, name))
 
-for obj in bpy.data.objects:
-    color = obj.data.vertex_colors[0].data[0].color
-    mat = bpy.data.materials.new(name=obj.name)
-    mat.diffuse_color = (color[0], color[1], color[2])
-    mat.specular_color = (color[0], color[1], color[2])
-    mat.use_vertex_color_paint = True
-    mat.use_shadeless = True
-    obj.data.materials.append(mat)
+bpy.ops.import_mesh.ply(filepath=room_filepath)
+
+# This was there for dealing with the colors
+# Commented until needed again, if ever
+#for obj in bpy.data.objects:
+#    color = obj.data.vertex_colors[0].data[0].color
+#    mat = bpy.data.materials.new(name=obj.name)
+#    mat.diffuse_color = (color[0], color[1], color[2])
+#    mat.specular_color = (color[0], color[1], color[2])
+#    mat.use_vertex_color_paint = True
+#    mat.use_shadeless = True
+#    obj.data.materials.append(mat)
 # room = bpy.context.scene.objects.active
 # mat.use_nodes=True
 # nodes=mat.node_tree.nodes
@@ -57,7 +97,7 @@ for obj in bpy.data.objects:
 # Get locations from file
 print("Loading locations file")
 locations = []
-with open("/home/brano/Projects/thesis/docker/output/LivingDiningRoom-48804_full.txt") as loc_f:
+with open(scanner_positions_filepath) as loc_f:
     lines = loc_f.readlines()
     for line in lines:
         x = line.strip().split(" ")
@@ -82,19 +122,27 @@ bpy.context.scene.objects.active = scanner_obj
 
 
 # Set up animation
-for i, loc in enumerate(locations):
+count = 0
+for loc in locations:
     # Set scanner to location
     scanner_obj.location = loc
-    scanner_obj.keyframe_insert(data_path="location", frame=sweep_duration * i)
+    scanner_obj.keyframe_insert(data_path="location", frame=sweep_duration * count)
 
     scanner_obj.rotation_euler = (radians(rotation_start), 0, 0)
-    scanner_obj.keyframe_insert(data_path="rotation_euler", frame=sweep_duration * i)
+    scanner_obj.keyframe_insert(data_path="rotation_euler", frame=sweep_duration * count)
 
     scanner_obj.rotation_euler = (radians(rotation_end), 0, 0)
-    scanner_obj.keyframe_insert(data_path="rotation_euler", frame=sweep_duration * (i + 1) - 1)
+    scanner_obj.keyframe_insert(data_path="rotation_euler", frame=sweep_duration * (count + 1) - 1)
 
-    print("Scanning")
+    scanner_obj.rotation_euler = (radians(rotation_start), 0, radians(180))
+    scanner_obj.keyframe_insert(data_path="rotation_euler", frame=sweep_duration * (count + 1))
 
+    scanner_obj.rotation_euler = (radians(rotation_end), 0, radians(180))
+    scanner_obj.keyframe_insert(data_path="rotation_euler", frame=sweep_duration * (count + 2) - 1)
+
+    count = count + 2
+
+print("Scanning")
 
 for fcurve in scanner_obj.animation_data.action.fcurves:
     if fcurve.data_path == 'location':
@@ -109,8 +157,9 @@ blensor.evd.output_labels = True
 for i, loc in enumerate(locations):
     print("Scanning")
     # The world transformation might need to be a parameter in the future (for connecting to our existing code for getting the transformation in real life)
+    output_filename = room_filepath.replace(".ply", ".evd")
     blensor.blendodyne.scan_range(scanner_obj,
-                                  filename=f"/home/brano/Projects/thesis/scans/test_{i}.evd",
+                                  filename=output_filename,
                                   frame_start=sweep_duration * i,
                                   frame_end=sweep_duration * (i + 1) - 1,
                                   world_transformation=scanner_obj.matrix_world)

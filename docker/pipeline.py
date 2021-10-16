@@ -34,11 +34,13 @@ def merge_close_vertices(vertices, distance=0.5):
             dedup_verts.append(v)
     return dedup_verts
 
-# Find the necessary files
+print("Starting")
+
+# Find the necessary room files
 obj_files = []
-for root, dirs, files in os.walk("./input"):
+for root, dirs, files in os.walk("/input"):
     for name in sorted(files):
-        if name.endswith("_full.ply"):
+        if name.endswith(".ply"):
             obj_files.append((name, os.path.join(root, name)))
 
 
@@ -48,7 +50,7 @@ for name, filepath in obj_files:
     if room is None:
         continue
 
-    print(name, filepath)
+    print("Processing ", name, filepath)
 
     # Extract floor
     bottom_mesh = room.slice_plane((0, 1.5, 0), (0, -1, 0))
@@ -59,12 +61,13 @@ for name, filepath in obj_files:
     except BaseException:
         print(f"Couldn't process mesh {name} in {filepath}, moving on to the next one.")
         continue
+
     bottom_mesh.fill_holes()
     bottom_mesh.remove_duplicate_faces()
     bottom_mesh.remove_infinite_values()
     bottom_mesh.merge_vertices()
 
-    # project
+    # Project
     new_vertices = []
     for vt in bottom_mesh.vertices:
         new_vertices.append([vt[0], 0., vt[2]])
@@ -72,19 +75,24 @@ for name, filepath in obj_files:
     bottom_mesh_flattened = trimesh.Trimesh(new_vertices, bottom_mesh.faces)
 
     # TODO: figure out how to convert trimesh to pymesh (or get rid of trimesh)
-    bottom_mesh_flattened.export(f'./output/tmp.ply')
-    p_bottom_mesh = pymesh.load_mesh(f'./output/tmp.ply')
+    bottom_mesh_flattened.export(f'/output/tmp.ply')
+    p_bottom_mesh = pymesh.load_mesh(f'/output/tmp.ply')
     p_bottom_mesh = pymesh.resolve_self_intersection(p_bottom_mesh)
-    pymesh.save_mesh(f"./output/{os.path.splitext(name)[0]}.ply", p_bottom_mesh)
+    pymesh.save_mesh(f"/output/{os.path.splitext(name)[0]}_bottom.ply", p_bottom_mesh)
 
-    with open(f"./output/{os.path.splitext(name)[0]}.ply", "rb") as f:
+    with open(f"/output/{os.path.splitext(name)[0]}_bottom.ply", "rb") as f:
         cleaned_floor = trimesh.load_mesh(f, file_type="ply")
 
     # Process the model
     cleaned_floor = cleaned_floor.process(validate=True)
     cleaned_floor = cleaned_floor.simplify_quadratic_decimation(10)
     outline = cleaned_floor.outline()
-    plan, transformation = outline.to_planar()
+    try:
+        plan, transformation = outline.to_planar()
+    except ValueError:
+        print(f"Couldn't transform room outline to a planar mesh in {name} in {filepath}, moving on to the next one.")
+        continue
+
     plan = plan.process()
 
     # Get medial axis
@@ -112,10 +120,9 @@ for name, filepath in obj_files:
         if middle:
             middle_verts.append(v)
 
-    print(middle_verts)
     middle_verts = merge_close_vertices(middle_verts, distance=0.2)
 
     # middle verts now are the points where to put the laser
-    np.savetxt(f"./output/{os.path.splitext(name)[0]}.txt", np.array(middle_verts))
+    np.savetxt(f"/output/{os.path.splitext(name)[0]}.txt", np.array(middle_verts))
 
 

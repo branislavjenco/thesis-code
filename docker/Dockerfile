@@ -1,6 +1,8 @@
 FROM continuumio/miniconda3
 
 # conda part
+RUN conda install -y -c conda-forge python=3.7
+# pymesh won't work with python 3.9 for example
 RUN conda install -y -c conda-forge numpy && conda install -y -c conda-forge igl && conda install -y -c conda-forge trimesh
 
 # PyMesh part
@@ -47,6 +49,7 @@ RUN conda install -y -c conda-forge addict
 RUN conda install -y -c conda-forge pandas
 RUN conda install -y -c conda-forge plyfile
 
-WORKDIR /
-COPY pipeline.py /
-ENTRYPOINT ["python", "pipeline.py"]
+RUN mkdir /src
+WORKDIR /src
+COPY pipeline.py /src
+ENTRYPOINT ["python", "/src/pipeline.py"]
