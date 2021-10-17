@@ -1,9 +1,10 @@
 import bpy
+import bmesh
 import sys
 import os
 import argparse
 import blensor
-from math import radians
+from math import radians, pi
 import random
 argv = sys.argv
 
@@ -41,7 +42,16 @@ locations = [{
 
 VLP16 = "vlp16"
 
-def make_cube(position, rotation, scale, name="cube"):
+
+def set_color(obj, rgba):
+    obj.color = rgba
+    mat = bpy.data.materials.new(f"Mat-{str(rgba)}")
+    mat.diffuse_color = (rgba[0], rgba[1], rgba[2])
+    mat.specular_color = (rgba[0], rgba[1], rgba[2])
+    mat.use_shadeless = True
+    obj.data.materials.append(mat)
+
+def make_cuboid(position, rotation, scale, name="cube"):
     # Origin point transformation settings
     mesh_offset = position
     origin_offset = (0, 0, 0)
@@ -84,24 +94,59 @@ def make_cube(position, rotation, scale, name="cube"):
     obj.location = [(i * -1) + mesh_offset[j] for j, i in enumerate(origin_offset)]
     obj.rotation_euler = rotation
     obj.scale = scale
+    set_color(obj, (1, 0, 0, 1))
     return obj
 
-def make_random_cube():
+def make_random_cuboid():
     position = (random.uniform(-2, 2), random.uniform(-2, 2), random.uniform(0.0, 2.0))
-    #rotation = (random.uniform(), random.uniform(), random.uniform())
-    rotation = (0, 0, 0)
+    rotation = (random.uniform(0, pi), random.uniform(0, pi), random.uniform(0, pi))
     scale = (random.uniform(0.1, 2.0), random.uniform(0.1, 2.0), random.uniform(0.1, 2.0))
 
-    return make_cube(position, rotation, scale)
+    return make_cuboid(position, rotation, scale)
 
+
+def make_cylinder(position, rotation, radius, length):
+    mesh_data = bpy.data.meshes.new("cylinder")
+    bm = bmesh.new()
+    bmesh.ops.create_cone(
+        bm,
+        cap_ends=True,
+        segments=100,
+        diameter1=radius,
+        diameter2=radius,
+        depth=length)
+        
+    bm.to_mesh(mesh_data)
+    bm.free()
+
+    mesh_obj = bpy.data.objects.new(mesh_data.name, mesh_data)
+    bpy.context.scene.objects.link(mesh_obj)
+    mesh_obj.location = position
+    mesh_obj.rotation_euler = rotation
+    set_color(mesh_obj, (0, 1, 0, 1))
+    return mesh_obj
+
+def make_random_cylinder():
+    position = (random.uniform(-2, 2), random.uniform(-2, 2), random.uniform(0.0, 2.0))
+    rotation = (random.uniform(0, pi), random.uniform(0, pi), random.uniform(0, pi))
+    radius = random.uniform(0.1, 1.0)
+    length = random.uniform(0.1, 10.0)
+
+    return make_cylinder(position, rotation, radius, length)
 
 def scan_random_object(iteration):
     # Clear scene entirely
     bpy.ops.wm.open_mainfile(filepath="/home/branislav/repos/thesis/empty.blend")
     scn = bpy.context.scene
 
+    primitive = None
     print("Creating primitive mesh.")
-    make_random_cube()
+    if random.uniform(0, 1) > 0.5:
+        make_random_cuboid()
+        primitive = "Cuboid"
+    else:
+        make_random_cylinder()
+        primitive = "Cylinder"
 
 
     # Add camera (lidar)
@@ -145,7 +190,7 @@ def scan_random_object(iteration):
     blensor.evd.output_labels = True
     print("Scanning")
     # The world transformation might need to be a parameter in the future (for connecting to our existing code for getting the transformation in real life)
-    output_filename = output_dir + f"/{iteration}.evd"
+    output_filename = output_dir + f"/{primitive}-{iteration}.evd"
     blensor.blendodyne.scan_range(scanner_obj,
                                   filename=output_filename,
                                   frame_start=0,
