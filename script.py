@@ -43,7 +43,7 @@ scanner_positions_dir = args.p
 
 
 frame_start = 0
-frame_end = 72
+frame_end = 144
 sweep_duration = 72
 VLP16 = "vlp16"
 
