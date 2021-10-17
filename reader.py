@@ -90,6 +90,29 @@ POINTS %d
 DATA ascii
 """
 
+class TXTWriter:
+    def __init__(self, filename, output_labels=True):
+        self.filename = filename
+        self.output_labels = output_labels
+
+    def write_txt_file(self, iterator):
+        try:
+            with open(self.filename, "w") as f:
+                count = 0
+                for e in iterator:
+                    count += 1
+                    self.write_point(f, e, self.output_labels)
+                print(f"count {count}")
+        except Exception as e:
+            traceback.print_exc()
+
+    def write_point(self, f, e, output_labels):
+        if output_labels:
+            f.write("%f %f %f %f %f %f %d\n" % (float(e[8]), float(e[9]), float(e[10]), float(e[11]), float(e[12]), float(e[13]), int(e[11])))
+        else:
+            f.write("%f %f %f %f %f %f\n" % (float(e[8]), float(e[9]), float(e[10]), float(e[11]), float(e[12]), float(e[13])))
+
+
 class PCLWriter:
     width = 0
     height = 0
