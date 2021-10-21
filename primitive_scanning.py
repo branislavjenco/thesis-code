@@ -105,8 +105,8 @@ def make_random_cuboid():
     return make_cuboid(position, rotation, scale)
 
 
-def make_cylinder(position, rotation, radius, length):
-    mesh_data = bpy.data.meshes.new("cylinder")
+def make_cylinder(position, rotation, radius, length, name="cylinder"):
+    mesh_data = bpy.data.meshes.new(name)
     bm = bmesh.new()
     bmesh.ops.create_cone(
         bm,
