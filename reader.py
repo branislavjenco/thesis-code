@@ -91,9 +91,10 @@ DATA ascii
 """
 
 class TXTWriter:
-    def __init__(self, filename, output_labels=True):
+    def __init__(self, filename, output_labels=True, noisy=True):
         self.filename = filename
         self.output_labels = output_labels
+        self.noisy = noisy
 
     def write_txt_file(self, iterator):
         try:
@@ -107,10 +108,13 @@ class TXTWriter:
             traceback.print_exc()
 
     def write_point(self, f, e, output_labels):
+        x_idx = 8 if self.noisy else 5
+        y_idx = 9 if self.noisy else 6
+        z_idx = 10 if self.noisy else 7
         if output_labels:
-            f.write("%f %f %f %f %f %f %d\n" % (float(e[8]), float(e[9]), float(e[10]), float(e[11]), float(e[12]), float(e[13]), int(e[11])))
+            f.write("%f %f %f %f %f %f %d\n" % (float(e[x_idx]), float(e[y_idx]), float(e[z_idx]), float(e[11]), float(e[12]), float(e[13]), int(e[11])))
         else:
-            f.write("%f %f %f %f %f %f\n" % (float(e[8]), float(e[9]), float(e[10]), float(e[11]), float(e[12]), float(e[13])))
+            f.write("%f %f %f %f %f %f\n" % (float(e[x_idx]), float(e[y_idx]), float(e[z_idx]), float(e[11]), float(e[12]), float(e[13])))
 
 
 class PCLWriter:

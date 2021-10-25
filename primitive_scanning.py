@@ -21,7 +21,6 @@ parser.add_argument(
     default = "/home/branislav/repos/thesis/primitives"
 )
 
-
 args = parser.parse_args(argv)
 output_dir = args.o
 
@@ -31,13 +30,9 @@ rotation_start = -60 + 90
 rotation_end = 60 + 90
 
 locations = [{
-    "position": (0.0, -3.0, 1.0),
-    "rotation_start": (radians(rotation_start), 0, 0),
-    "rotation_end": (radians(rotation_end), 0, 0)
-}, {
-    "position": (0.0, 3.0, 1.0),
-    "rotation_start": (radians(rotation_start), 0, radians(180)),
-    "rotation_end": (radians(rotation_end), 0, radians(180))
+   "position": (0.0, -3.0, 1.0),
+   "rotation_start": (radians(rotation_start), 0, 0),
+   "rotation_end": (radians(rotation_end), 0, 0)
 }]
 
 VLP16 = "vlp16"
@@ -91,7 +86,7 @@ def make_cuboid(position, rotation, scale, name="cube"):
     # -----------------------------------------------------------------------------
     # Offset mesh to move origin point
 
-    obj.location = [(i * -1) + mesh_offset[j] for j, i in enumerate(origin_offset)]
+    #obj.location = [(i * -1) + mesh_offset[j] for j, i in enumerate(origin_offset)]
     obj.rotation_euler = rotation
     obj.scale = scale
     set_color(obj, (1, 0, 0, 1))
@@ -121,7 +116,7 @@ def make_cylinder(position, rotation, radius, length, name="cylinder"):
 
     mesh_obj = bpy.data.objects.new(mesh_data.name, mesh_data)
     bpy.context.scene.objects.link(mesh_obj)
-    mesh_obj.location = position
+    #mesh_obj.location = position
     mesh_obj.rotation_euler = rotation
     set_color(mesh_obj, (0, 1, 0, 1))
     return mesh_obj
@@ -147,7 +142,6 @@ def scan_random_object(iteration):
     else:
         make_random_cylinder()
         primitive = "Cylinder"
-
 
     # Add camera (lidar)
     print("Adding scanner to scene")
@@ -190,12 +184,14 @@ def scan_random_object(iteration):
     blensor.evd.output_labels = True
     print("Scanning")
     # The world transformation might need to be a parameter in the future (for connecting to our existing code for getting the transformation in real life)
-    output_filename = output_dir + f"/{primitive}-{iteration}.evd"
+    output_filename = output_dir + f"/{iteration}.evd"
     blensor.blendodyne.scan_range(scanner_obj,
                                   filename=output_filename,
                                   frame_start=0,
                                   frame_end=len(locations)*sweep_duration,
-                                  world_transformation=scanner_obj.matrix_world)
+                                  world_transformation=scanner_obj.matrix_world,
+                                  add_blender_mesh=True,
+                                  depth_map=True)
 
 for i in range(10):
     scan_random_object(i)

@@ -10,7 +10,7 @@ def evds_to_txts(d):
             if name.endswith(".evd"):
                 _file = os.path.join(root, name)
                 reader = EvdReader(_file)
-                writer = TXTWriter(f"{os.path.splitext(_file)[0]}.txt")
+                writer = TXTWriter(f"{os.path.splitext(_file)[0]}.txt", noisy=False)
                 writer.write_txt_file(reader.get_rays())
 
 

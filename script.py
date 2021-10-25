@@ -142,7 +142,7 @@ def scan_room(room_filepath, scanner_positions_filepath):
 
     # Do scanning
     blensor.evd.output_labels = True
-    for i, loc in enumerate(locations):
+    for i, loc in enumerate(locations[:1]):
         print("Scanning")
         # The world transformation might need to be a parameter in the future (for connecting to our existing code for getting the transformation in real life)
         output_filename = room_filepath.replace(".ply", ".evd")
@@ -150,7 +150,8 @@ def scan_room(room_filepath, scanner_positions_filepath):
                                       filename=output_filename,
                                       frame_start=sweep_duration * i,
                                       frame_end=sweep_duration * (i + 1) - 1,
-                                      world_transformation=scanner_obj.matrix_world)
+                                      world_transformation=scanner_obj.matrix_world,
+                                      depth_map=True)
 
 
 room_files = {}
