@@ -49,7 +49,7 @@ VLP16 = "vlp16"
 
 def scan_room(room_filepath, scanner_positions_filepath):
     # Clear scene entirely
-    bpy.ops.wm.open_mainfile(filepath="/home/branisj/thesis/empty.blend")
+    bpy.ops.wm.open_mainfile(filepath="/home/branislav/repos/thesis/empty.blend")
     scn = bpy.context.scene
 
     print("Loading room mesh.")
