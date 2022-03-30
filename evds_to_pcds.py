@@ -1,27 +1,28 @@
 import os
+import glob
 import argparse
 
 from reader import EvdReader, PCLWriter
 
 
-def evds_to_pcds(d):
-    for root, dirs, files in os.walk(d):
-        for name in sorted(files):
-            if name.endswith(".evd"):
-                _file = os.path.join(root, name)
-                reader = EvdReader(_file)
-                writer = PCLWriter(f"{os.path.splitext(_file)[0]}")
-                writer.write_pcl_file(reader.get_rays())
+def evds_to_pcds(files):
+    for filename in sorted(files):
+        if filename.endswith(".evd"):
+            reader = EvdReader(filename)
+            new_filename = os.path.splitext(filename)[0]
+            writer = PCLWriter(f"{new_filename}")
+            writer.write_pcl_file(reader.get_rays())
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '-d',
-        help = 'directory with EVD files'
+        '-g',
+        help = 'glob expression for the EVD files'
     )
 
     args = parser.parse_args()
-    d = args.d
-    evds_to_pcds(d)
+    g = args.g
+    files = sorted(glob.glob(g))
+    evds_to_pcds(files)
 

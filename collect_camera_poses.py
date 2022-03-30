@@ -1,5 +1,6 @@
 # collect the poses for the cameras in the whole s3dis dataset
 import json
+from collections import defaultdict
 import argparse
 import glob
 
@@ -11,12 +12,16 @@ if __name__ == "__main__":
     g = args.g
     o = args.o
 
-    locations = []
+    locations = defaultdict(set)
     files = sorted(glob.glob(g))
     for file in files:
         with open(file) as f:
             data = json.load(f)
-            locations.append(data["camera_location"])
+            room = data["room"]
+            locations[room].add(tuple(data["camera_location"]))
+
+    for room in locations.keys():
+        locations[room] = list(locations[room])
 
     with open(o, 'w') as f:
         json.dump(locations, f)

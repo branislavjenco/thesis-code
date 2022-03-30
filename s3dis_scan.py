@@ -19,7 +19,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     '-o',
     help = 'Output directory',
-    default = "/home/branislav/repos/thesis/primitives"
+    default = "/home/branislav/repos/thesis/s3dis_scans/"
 )
 
 parser.add_argument(
@@ -34,7 +34,7 @@ parser.add_argument(
 
 args = parser.parse_args(argv)
 output_dir = args.o
-locations_file = "/home/branislav/repos/thesis/locations.json"
+locations_file = "/home/branislav/repos/thesis/locations_pruned.json"
 mesh_file = "/home/branislav/repos/s3dis/area_1/3d/rgb.obj"
 
 locations = []
@@ -47,11 +47,11 @@ rotation_start = -60 + 90
 rotation_end = 60 + 90
 
 
-locations = [{
-    "position": pos,
+poses = [{
+    "position": loc,
     "rotation_start": (radians(rotation_start), 0, 0),
     "rotation_end": (radians(rotation_end), 0, 0)
-} for pos in locations]
+} for loc in locations.values()]
 
 VLP16 = "vlp16"
 
@@ -92,15 +92,15 @@ bpy.context.scene.objects.active = scanner_obj
 
 
 # 5. Prune the locations from their original number
-L = min(len(locations), 700)
-pruned_locations = []
-for i in range(0, L, 200):
-    pruned_locations.append(locations[i])
-locations = pruned_locations
+# L = min(len(locations), 700)
+# pruned_locations = []
+# for i in range(0, L, 200):
+#     pruned_locations.append(locations[i])
+# locations = pruned_locations
 
 
 # 6. Set up animation
-for i, loc in enumerate(locations):
+for i, loc in enumerate(poses):
     # Set scanner to location
     scanner_obj.location = loc["position"]
     scanner_obj.keyframe_insert(data_path="location", frame=sweep_duration * i)
@@ -123,12 +123,13 @@ for fcurve in scanner_obj.animation_data.action.fcurves:
 blensor.evd.output_labels = True
 print("Scanning")
 # The world transformation might need to be a parameter in the future (for connecting to our existing code for getting the transformation in real life)
-output_filename = output_dir + f"/s3dis_scan.evd"
-blensor.blendodyne.scan_range(scanner_obj,
-                              filename=output_filename,
-                              frame_start=0,
-                              frame_end=len(locations) * sweep_duration,
-                              world_transformation=scanner_obj.matrix_world,
-                              add_blender_mesh=True,
-                              depth_map=True)
+for i, room in enumerate(locations.keys()):
+    output_filename = output_dir + f"{room}.evd"
+    blensor.blendodyne.scan_range(scanner_obj,
+                                  filename=output_filename,
+                                  frame_start=sweep_duration * i,
+                                  frame_end=sweep_duration * (i + 1) - 1,
+                                  world_transformation=scanner_obj.matrix_world,
+                                  add_blender_mesh=True,
+                                  depth_map=True)
 
