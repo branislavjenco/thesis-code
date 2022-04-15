@@ -18,7 +18,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     '-o',
     help = 'Output directory',
-    default = "/home/branislav/repos/thesis/primitives"
+    default = "/home/branisj/thesis/primitives"
 )
 
 args = parser.parse_args(argv)
