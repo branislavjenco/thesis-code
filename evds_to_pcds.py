@@ -5,7 +5,8 @@ import argparse
 from reader import EvdReader, PCLWriter
 
 
-def evds_to_pcds(files):
+def evds_to_pcds(g):
+    files = sorted(glob.glob(g))
     for filename in sorted(files):
         if filename.endswith(".evd"):
             reader = EvdReader(filename)
@@ -23,6 +24,5 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     g = args.g
-    files = sorted(glob.glob(g))
-    evds_to_pcds(files)
+    evds_to_pcds(g)
 
