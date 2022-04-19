@@ -1,5 +1,6 @@
 import open3d as o3d
 import glob
+import argparse
 import numpy as np
 
 # 1. load the file scanned by Blensor
@@ -7,6 +8,9 @@ import numpy as np
 # 3. get bounding box from 2
 # 4. remove all points outside the bounding box from 1
 # 5. save is txt right away
+
+default_file_glob = "/home/branislav/repos/thesis/s3dis_scans_no_noise/*.pcd"
+default_stanford_dir = "/home/branislav/Downloads/Stanford3dDataset_v1.2"
 
 
 def get_bb(data):
@@ -30,10 +34,8 @@ def get_area_and_room(filename):
     return area, room
 
 
-def main():
-    pattern = "/home/branislav/repos/thesis/s3dis_scans_2/*.pcd"
-    crop_dir = "/home/branislav/Downloads/Stanford3dDataset_v1.2"
-    files = sorted(glob.glob(pattern))
+def crop(g=default_file_glob, crop_dir=default_stanford_dir):
+    files = sorted(glob.glob(g))
 
 
     for filename in files:
@@ -49,6 +51,25 @@ def main():
 
         output_filename = filename.replace(".pcd", ".ply")
         o3d.io.write_point_cloud(output_filename, cropped)
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '-g',
+        help='glob expression for the PCD files',
+        default=default_file_glob
+    )
+    parser.add_argument(
+        '-s',
+        help='Location of the base Stanford dataset (point clouds)',
+        default=default_stanford_dir
+    )
+
+    args = parser.parse_args()
+    g = args.g
+    crop_dir = args.s
+    crop(g, crop_dir)
+
 
 if __name__ == "__main__":
     main()

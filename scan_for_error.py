@@ -1,5 +1,7 @@
 import bpy
 import os
+import sys
+import argparse
 import blensor
 from math import radians
 
@@ -11,6 +13,25 @@ from math import radians
 '''
 
 
+argv = sys.argv
+
+if "--" not in argv:
+    argv = []  # as if no args are passed
+else:
+    argv = argv[argv.index("--") + 1:]  # get all args after "--"
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument(
+    '-e',
+    help = 'Error keyword (none, ray, distance, incidence)',
+    default = "none"
+)
+
+args = parser.parse_args(argv)
+error = args.e
+print(f"Using error type: {error}")
+
 # the real scans were roughly 1.6 meters wide and 2.2 meters tall
 
 VLP16 = "vlp16"
@@ -18,9 +39,8 @@ bpy.context.scene.render.fps = 120
 sweep_duration = 120 * 4
 runs_per_distance = 1
 scan_types = ["wall", "floor"]
-# scan_types = ["wall"]
 scanner_locations = ((0, 5, 1), (0, 4, 1), (0, 3, 1) ,(0, 2, 1) ,(0, 1, 1))
-# scanner_locations = [(0, 2, 1)]
+# scanner_locations = [(0, 5, 1)]
 rotation_start = -60 + 90
 rotation_end = 60 + 90
 
@@ -111,20 +131,41 @@ def scan_and_save(scanner_obj, runs, scan_type):
                 # (so that we don't have to crop the point cloud later)
                 assert_floor(dist)
             params = blensor.blendodyne.vlp16_parameters
-            print(params)
+            use_incidence_angle = True if error == "incidence" else False
+            add_beam_divergence = True if error == "divergence" else False
+            if error == "none":
+                noise_mu = 0.0
+                noise_sigma = 0.0
+                params["distance_bias_noise_mu"] = 0.0
+                params["distance_bias_noise_sigma"] = 0.0
+            elif error == "default":
+                noise_mu = 0.0
+                noise_sigma = 0.01
+                params["distance_bias_noise_mu"] = 0.0
+                params["distance_bias_noise_sigma"] = 0.078
+            elif error == "base_vlp16":
+                noise_mu = 0.0
+                noise_sigma = 0.01
+                params["distance_bias_noise_mu"] = 0.0
+                params["distance_bias_noise_sigma"] = 0.02
+            else:
+                noise_mu = params["noise_mu"]
+                noise_sigma = params["noise_sigma"]
+
             blensor.blendodyne.scan_range(scanner_obj,
                                           angle_resolution=params["angle_resolution"],
                                           rotation_speed=params["rotation_speed"],
                                           max_distance=params["max_dist"],
-                                          noise_mu=params["noise_mu"],
-                                          noise_sigma=params["noise_sigma"],
-                                          filename=f"/home/branislav/repos/thesis/virtual_error_measurements/default_blensor_error_without_correction/{dist}m_{run}_{scan_type}.evd",
+                                          noise_mu=noise_mu,
+                                          noise_sigma=noise_sigma,
+                                          filename=f"/home/branislav/repos/thesis/new_virtual_error_measurements/{error}/{dist}m_{run}_{scan_type}.evd",
                                           frame_start=sweep_duration * i,
                                           frame_end=sweep_duration * (i + 1) - 1,
                                           world_transformation=scanner_obj.matrix_world,
-                                          output_laser_id_as_color=True,
-                                          apply_vertical_correction=False,
-                                          add_beam_divergence=False)
+                                          use_incidence_angle=use_incidence_angle,
+                                          add_beam_divergence=add_beam_divergence,
+                                          output_laser_id_as_color=True
+                                          )
 
 
 for scan_type in scan_types:

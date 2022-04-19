@@ -8,6 +8,7 @@
 
 #include <pcl/point_cloud.h>
 #include <pcl/io/pcd_io.h>
+#include <pcl/io/auto_io.h>
 #include <pcl/common/centroid.h>
 #include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/console/parse.h>
@@ -16,14 +17,17 @@
 #include <pcl/sample_consensus/ransac.h>
 #include <pcl/sample_consensus/sac_model_plane.h>
 #include <pcl/filters/project_inliers.h>
+#include <pcl/common/transforms.h>
+#include "utils.h"
 
 
 #include <iostream>
+#include <string>
 #include <cmath>
+#include <queue>
 
 typedef pcl::PointCloud<pcl::PointXYZL> point_cloud;
 
-std::vector<int32_t> laser_angles_vlp16{-15, 1, -13, 3, -11, 5, -9, 7, -7, 9, -5, 11, -3, 13, -1, 15};
 
 struct classcomp
 {
@@ -32,6 +36,23 @@ struct classcomp
         return a.z < b.z;
     }
 };
+
+
+void
+read_distances_file(const point_cloud::Ptr &cloud, const std::string &filename) {
+    std::ifstream file(filename);
+    std::string   line;
+    while(std::getline(file, line))
+    {
+        std::stringstream   linestream(line);
+        std::string         data;
+        float x, y, z, res, l;
+        int32_t angle;
+        linestream >> res >> x >> y >> z >> l >> angle;
+        pcl::PointXYZL point(x, y, z, angle_to_color(angle));
+        cloud->push_back(point);
+    }
+}
 
 void
 visualize(const point_cloud::Ptr &cloud, const pcl::ModelCoefficients::Ptr plane_coeff)
@@ -120,13 +141,20 @@ main(int argc, char **argv)
 
     char opt_f[] = "-f";
     char opt_o[] = "-o";
+    char opt_t[] = "-t";
     std::string input_file;
     std::string output_file;
+    bool real;
     pcl::console::parse_argument(argc, (char **) argv, opt_f, input_file);
     pcl::console::parse_argument(argc, (char **) argv, opt_o, output_file);
+    pcl::console::parse_argument(argc, (char **) argv, opt_t, real);
 
     std::cout << "Loading point cloud" << std::endl;
-    pcl::io::loadPCDFile<pcl::PointXYZL>(input_file, *cloud);
+    if (real) {
+        read_distances_file(cloud, input_file);
+    } else {
+        pcl::io::loadPCDFile<pcl::PointXYZL>(input_file, *cloud);
+    }
     relabel_color_to_id(cloud);
 
     // Making a point cloud for each laser
@@ -162,27 +190,28 @@ main(int argc, char **argv)
     int c = 0;
     for (auto &laser_cloud: laser_clouds)
     {
-        point_cloud::Ptr laser_cloud_plane_proj(new point_cloud);
-        pcl::ProjectInliers<pcl::PointXYZL> proj;
-        proj.setModelType (pcl::SACMODEL_PLANE);
-        proj.setInputCloud (laser_cloud);
-        proj.setModelCoefficients (plane_coeff);
-        proj.filter (*laser_cloud_plane_proj);
-
-        point_cloud::Ptr laser_cloud_line_proj(new point_cloud);
-        pcl::ProjectInliers<pcl::PointXYZL> proj2;
-        proj.setModelType (pcl::SACMODEL_PLANE);
-        proj.setInputCloud (laser_cloud_plane_proj);
-        proj.setModelCoefficients (rotated_plane_coeff);
-        proj.filter (*laser_cloud_line_proj);
+//        // I dont quite understand why I did this projection
+//        point_cloud::Ptr laser_cloud_plane_proj(new point_cloud);
+//        pcl::ProjectInliers<pcl::PointXYZL> proj;
+//        proj.setModelType (pcl::SACMODEL_PLANE);
+//        proj.setInputCloud (laser_cloud);
+//        proj.setModelCoefficients (plane_coeff);
+//        proj.filter (*laser_cloud_plane_proj);
+//
+//        point_cloud::Ptr laser_cloud_line_proj(new point_cloud);
+//        pcl::ProjectInliers<pcl::PointXYZL> proj2;
+//        proj.setModelType (pcl::SACMODEL_PLANE);
+//        proj.setInputCloud (laser_cloud_plane_proj);
+//        proj.setModelCoefficients (rotated_plane_coeff);
+//        proj.filter (*laser_cloud_line_proj);
 
         // Segment individual clouds
         pcl::search::KdTree<pcl::PointXYZL>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZL>);
-        tree->setInputCloud(laser_cloud_line_proj);
+        tree->setInputCloud(laser_cloud);
         pcl::EuclideanClusterExtraction<pcl::PointXYZL> extraction;
-        extraction.setInputCloud(laser_cloud_line_proj);
+        extraction.setInputCloud(laser_cloud);
         std::vector<pcl::PointIndices> cluster_indices;
-        extraction.setClusterTolerance(0.02); // found works best with around 0.04 with virtual scan, 0.06 for real
+        extraction.setClusterTolerance(0.025); // found works best with around 0.04 with virtual scan, 0.06 for real
         extraction.setSearchMethod(tree);
         extraction.extract(cluster_indices);
         std::cout << "Total number of points " << laser_cloud->size() << std::endl;
@@ -202,9 +231,9 @@ main(int argc, char **argv)
         }
 
         if (c < 1) {
-            visualize(laser_cloud, rotated_plane_coeff);
-            visualize(laser_cloud_plane_proj, rotated_plane_coeff);
-            visualize(laser_cloud_line_proj, rotated_plane_coeff);
+//            visualize(laser_cloud, rotated_plane_coeff);
+//            visualize(laser_cloud_plane_proj, rotated_plane_coeff);
+//            visualize(laser_cloud_line_proj, rotated_plane_coeff);
             c++;
         }
         // Distribute based on the new label

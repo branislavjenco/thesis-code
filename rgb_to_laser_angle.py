@@ -3,6 +3,7 @@
 import math
 import argparse
 import glob
+import os
 
 laser_angles_vlp16 = [-15, 1, -13, 3, -11, 5, -9, 7, -7, 9, -5, 11, -3, 13, -1, 15]
 
@@ -35,6 +36,8 @@ def transform_colors_to_laser_angles(g):
                         tokens = line.split(" ")
                         tokens[5] = str(color_to_laser_angle(int(tokens[5])))
                         output_file.write(" ".join(tokens) + "\n")
+            os.remove(filename)
+            os.rename(output_filename, filename)
 
 
 if __name__ == "__main__":
