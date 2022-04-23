@@ -3,6 +3,8 @@ import glob
 import argparse
 import numpy as np
 
+# Used in section about PCC Arena to crop point clouds coming from Blensor scans
+
 # 1. load the file scanned by Blensor
 # 2. find the corresponding .txt point cloud file from StanfordDataset v1.2
 # 3. get bounding box from 2
