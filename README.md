@@ -40,3 +40,6 @@ This script was used for the construction of the scanning pipeline and other exp
 
 Contains classes to read BlenSor's `.evd` file and output a `.txt` or `.pcd` file.
 
+## Other work
+
+Apart from the work in this repository, modifications to Indoor reconstruction++ were made as a Pull Request to the original repository, available [here](https://github.com/henryhansen23/Indoor-reconstruction-plus-plus/pull/4). The work done on BlenSor is available in a fork of the original repository found [here](https://github.uio.no/branisj/blensor). 
