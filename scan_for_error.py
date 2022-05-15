@@ -147,7 +147,7 @@ def scan_and_save(scanner_obj, runs, scan_type):
                 noise_mu = 0.0
                 noise_sigma = 0.01
                 params["distance_bias_noise_mu"] = 0.0
-                params["distance_bias_noise_sigma"] = 0.02
+                params["distance_bias_noise_sigma"] = 0.014
             else:
                 noise_mu = params["noise_mu"]
                 noise_sigma = params["noise_sigma"]

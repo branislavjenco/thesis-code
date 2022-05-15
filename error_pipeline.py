@@ -5,12 +5,13 @@ from evds_to_pcds import evds_to_pcds
 from get_distances import get_distances
 from rgb_to_laser_angle import transform_colors_to_laser_angles
 
-dist_folder = "new_virtual_error_measurements"
-blender = "/home/branislav/repos/blensor2/cmake-build-release/bin/blender"
-error_script = "/home/branislav/repos/thesis/scan_for_error.py"
+# Wrapper around the scan_for_error script which performs the full virtual error pipeline
 
-# errors = ["none", "default", "base_vlp16", "divergence", "incidence"]
-errors = ["base_vlp16"]
+dist_folder = "virtual_error_measurements"
+blender = "<blensor executable>"
+error_script = "./scan_for_error.py"
+
+errors = ["none", "default", "base_vlp16", "divergence", "incidence"]
 
 def clear_glob(g):
     files = glob.glob(g)
@@ -19,7 +20,7 @@ def clear_glob(g):
 
 
 for error in errors:
-    errors_folder = f"/home/branislav/repos/thesis/{dist_folder}"
+    errors_folder = f"./{dist_folder}"
 
     # Make directory if doesn't exist
     os.makedirs(errors_folder, exist_ok=True)

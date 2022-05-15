@@ -3,8 +3,9 @@ import argparse
 import glob
 import subprocess
 
-set_laser_id_as_label = "./cpp/cmake-build-debug/set_laser_id_as_label"
+# Wrapper for the set_laser_id_as_label program which allows the user the specify a glob expression as the input
 
+set_laser_id_as_label = "./cpp/cmake-build-debug/set_laser_id_as_label"
 
 def get_distances(g):
     files = sorted(glob.glob(g))

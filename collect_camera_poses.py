@@ -1,4 +1,4 @@
-# collect the poses for the cameras in the whole s3dis dataset
+# Collect the poses for the cameras in the whole s3dis dataset
 import json
 from collections import defaultdict
 import argparse

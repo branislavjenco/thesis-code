@@ -26,7 +26,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     '-o',
     help = 'Output directory',
-    default = "/home/branislav/repos/thesis/s3dis_scans_no_noise/"
+    default = "./s3dis_scans/"
 )
 
 parser.add_argument(

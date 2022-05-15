@@ -18,7 +18,7 @@ subprocess.run([blender, "-b", "-P",  scan_script, "--", "-l", loc_glob, "-s", f
 # 2. convert .evd files to .pcd files
 evds_to_pcds(evd_glob)
 
-# 3. crop by BB
+# 3. crop by bounding box
 crop(pcd_glob, stanford_pc_dir)
 
 

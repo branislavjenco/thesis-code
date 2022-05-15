@@ -10,7 +10,6 @@ Workings of the blensor scanning:
 i.e. test.pcd will touch test.pcd, that's why there is an empty test.pcd after scanning
 - normally it adds a "last frame" to it, which is just packed -1 afaict, dunno why
 - otherwise each scan in range is testxxx.pcd and test_noisyxxx.pcd with frame as xxx
-- NO IDEA where test suffix-less file test comes from - it comes from the appendEvdFile method, where the if test
 works such that it writes PCL and evd, however it doesn't have the extension...
 
 Info on EVD format is here:
@@ -55,7 +54,7 @@ def scan_room(room_filepath, scanner_positions_filepath):
     print("Loading room mesh.")
     obj_files = []
 
-    # this was there for when the room is split into several different files
+    # This part was here for when the room is split into several different files
     #for root, dirs, files in os.walk("/home/branisj/3D-FRONT-ToolBox/scripts/output/Bedroom-6979.ply"):
     #    for name in files:
     #        if name.endswith(".ply") and not name.endswith("_full.ply"):
@@ -63,8 +62,8 @@ def scan_room(room_filepath, scanner_positions_filepath):
 
     bpy.ops.import_mesh.ply(filepath=room_filepath)
 
-    # This was there for dealing with the colors
-    # Commented until needed again, if ever
+    # This part was here for dealing with the colors
+    # Commented out until needed again
     #for obj in bpy.data.objects:
     #    color = obj.data.vertex_colors[0].data[0].color
     #    mat = bpy.data.materials.new(name=obj.name)

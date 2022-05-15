@@ -4,8 +4,9 @@ import os
 import glob
 import subprocess
 
-get_plane_distances = "./cpp/cmake-build-debug/get_plane_distances"
+# Wrapper for the get_plane_distances program which allows the user the specify a glob expression as the input
 
+get_plane_distances = "./cpp/cmake-build-debug/get_plane_distances"
 
 def get_distances(g):
     files = sorted(glob.glob(g))

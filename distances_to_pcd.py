@@ -4,6 +4,8 @@ import open3d as o3d
 import argparse
 from pathlib import Path
 
+# Translates a .txt "distance" file to a pcd point cloud
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-g", help="Glob expression for distance files")
@@ -24,21 +26,16 @@ if __name__ == "__main__":
 
 
         pcl = o3d.geometry.PointCloud()
-        print(lines)
-
-
         pcl.points = o3d.utility.Vector3dVector(np.array(lines))
-        o3d.visualization.draw_geometries([pcl])
-        break
-        # 2. use ply extension
-        #
-        # output_filename = filepath.name.replace("." + f, ".pcd")
-        #
-        #
-        # # 4. make an output path using the output dir and the new name
-        # output_path = Path(o).joinpath(output_filename)
-        #
-        # # 5. write the new file
-        # o3d.t.io.write_point_cloud(output_path.as_posix(), pcd)
+        #2. use ply extension
+
+        output_filename = filepath.name.replace(".txt", ".pcd")
+
+
+        # 4. make an output path using the output dir and the new name
+        output_path = Path(o).joinpath(output_filename)
+
+        # 5. write the new file
+        o3d.t.io.write_point_cloud(output_path.as_posix(), pcl)
 
 

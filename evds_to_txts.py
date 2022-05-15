@@ -3,6 +3,7 @@ import argparse
 
 from reader import EvdReader, TXTWriter
 
+# Translate BlenSor's EVD file int a PCD file
 
 def evds_to_txts(d):
     for root, dirs, files in os.walk(d):

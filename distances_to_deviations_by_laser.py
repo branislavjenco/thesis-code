@@ -2,6 +2,9 @@ import numpy as np
 import argparse
 import glob
 
+# This script was used to group the planar residual (distances) data
+# It has been superseeded by the code in the noise_distributions notebook
+
 
 def load_measurement_file(name):
     return np.loadtxt(name)

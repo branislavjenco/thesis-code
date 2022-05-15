@@ -2,8 +2,9 @@ import subprocess
 import glob
 import argparse
 
-cmd = "/home/branislav/repos/thesis/cpp/cmake-build-release/get_centroids"
+# Wrapper for the get_centroids program which allows the user to specify a glob expression as the input
 
+cmd = "./cpp/cmake-build-release/get_centroids"
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

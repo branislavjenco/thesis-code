@@ -4,6 +4,7 @@ import argparse
 
 from reader import EvdReader, PCLWriter
 
+# Translate BlenSor's EVD file int a PCD file
 
 def evds_to_pcds(g):
     files = sorted(glob.glob(g))

@@ -8,6 +8,8 @@ from math import radians, pi
 import random
 argv = sys.argv
 
+# Testing programmatic adding of primitives into scene to be scanned by BlenSor. Ultimately not used in the thesis.
+
 color_cuboid = (1, 0, 0, 1) # red
 color_cylinder = (0, 1, 0, 1) # green
 color_floor = (0, 0, 1, 1) # blue
@@ -220,12 +222,12 @@ def scan_random_object(iteration):
     primitive = None
     make_room()
     print("Creating primitive mesh.")
-# if random.uniform(0, 1) > 0.5:
-#     make_random_cuboid()
-#     primitive = "Cuboid"
-# else:
-    make_random_cylinder()
-    primitive = "Cylinder"
+    if random.uniform(0, 1) > 0.5:
+        make_random_cuboid()
+        primitive = "Cuboid"
+    else:
+        make_random_cylinder()
+        primitive = "Cylinder"
 
     # Add camera (lidar)
     print("Adding scanner to scene")
