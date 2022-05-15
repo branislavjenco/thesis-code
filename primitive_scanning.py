@@ -8,6 +8,12 @@ from math import radians, pi
 import random
 argv = sys.argv
 
+color_cuboid = (1, 0, 0, 1) # red
+color_cylinder = (0, 1, 0, 1) # green
+color_floor = (0, 0, 1, 1) # blue
+color_ceiling = (1, 1, 0, 1) # yellow
+color_wall = (1, 0, 1, 1) # magenta
+
 if "--" not in argv:
     argv = []  # as if no args are passed
 else:
@@ -18,7 +24,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     '-o',
     help = 'Output directory',
-    default = "/home/branisj/thesis/primitives"
+    default = "/home/branislav/repos/thesis/primitives2"
 )
 
 args = parser.parse_args(argv)
@@ -30,7 +36,11 @@ rotation_start = -60 + 90
 rotation_end = 60 + 90
 
 locations = [{
-   "position": (0.0, -3.0, 1.0),
+   "position": (0.0, 1.5, 1.0),
+   "rotation_start": (radians(rotation_start), 0, 0),
+   "rotation_end": (radians(rotation_end), 0, 0)
+},{
+   "position": (0.0, -1.5, 1.0),
    "rotation_start": (radians(rotation_start), 0, 0),
    "rotation_end": (radians(rotation_end), 0, 0)
 }]
@@ -89,16 +99,89 @@ def make_cuboid(position, rotation, scale, name="cube"):
     #obj.location = [(i * -1) + mesh_offset[j] for j, i in enumerate(origin_offset)]
     obj.rotation_euler = rotation
     obj.scale = scale
-    set_color(obj, (1, 0, 0, 1))
+    set_color(obj, color_cuboid)
     return obj
 
 def make_random_cuboid():
     position = (random.uniform(-2, 2), random.uniform(-2, 2), random.uniform(0.0, 2.0))
-    rotation = (random.uniform(0, pi), random.uniform(0, pi), random.uniform(0, pi))
-    scale = (random.uniform(0.1, 2.0), random.uniform(0.1, 2.0), random.uniform(0.1, 2.0))
+    # rotation = (random.uniform(0, pi), random.uniform(0, pi), random.uniform(0, pi))
+    rotation = (0.0, 0.0, random.uniform(0, pi)) # contrain round Z
+    scale = (random.uniform(0.1, 1.0), random.uniform(0.1, 1.0), random.uniform(0.1, 1.0))
 
     return make_cuboid(position, rotation, scale)
 
+def make_room():
+    # Origin point transformation settings
+    origin_offset = (0, 0, 0)
+    floor_level = 0.0
+    ceiling_level = 2.2
+    extent_x = (random.uniform(-2, -3), random.uniform(2, 3))
+    extent_y = (random.uniform(-2, -3), random.uniform(2, 3))
+
+    def vert(x, y, z):
+        """ Make a vertex """
+
+        return (x + origin_offset[0], y + origin_offset[1], z + origin_offset[2])
+
+    vs = [vert(extent_x[1], extent_y[1], floor_level),
+             vert(extent_x[1], extent_y[0], floor_level),
+             vert(extent_x[0], extent_y[0], floor_level),
+             vert(extent_x[0], extent_y[1], floor_level),
+             vert(extent_x[1], extent_y[1], ceiling_level),
+             vert(extent_x[1], extent_y[0], ceiling_level),
+             vert(extent_x[0], extent_y[0], ceiling_level),
+             vert(extent_x[0], extent_y[1], ceiling_level)]
+
+    floor_v = [vs[0], vs[1], vs[2], vs[3]]
+    floor_f = [(0,1,2,3)]
+    mesh = bpy.data.meshes.new("floor")
+    mesh.from_pydata(floor_v, [], floor_f)
+    obj = bpy.data.objects.new("floor", mesh)
+    bpy.context.scene.objects.link(obj)
+    set_color(obj, color_floor)
+
+    ceiling_v = [vs[4], vs[5], vs[6], vs[7]]
+    ceiling_f = [(0,1,2,3)]
+    mesh = bpy.data.meshes.new("ceiling")
+    mesh.from_pydata(ceiling_v, [], ceiling_f)
+    obj = bpy.data.objects.new("ceiling", mesh)
+    bpy.context.scene.objects.link(obj)
+    set_color(obj, color_ceiling)
+
+    wall1_v = [vs[0], vs[4], vs[5], vs[1]]
+    wall1_f = [(0, 1, 2, 3)]
+    mesh = bpy.data.meshes.new("wall1")
+    mesh.from_pydata(wall1_v, [], wall1_f)
+    obj = bpy.data.objects.new("wall1", mesh)
+    bpy.context.scene.objects.link(obj)
+    set_color(obj, color_wall)
+
+    wall2_v = [vs[1], vs[5], vs[6], vs[2]]
+    wall2_f = [(0, 1, 2, 3)]
+    mesh = bpy.data.meshes.new("wall2")
+    mesh.from_pydata(wall2_v, [], wall2_f)
+    obj = bpy.data.objects.new("wall2", mesh)
+    bpy.context.scene.objects.link(obj)
+    set_color(obj, color_wall)
+
+    wall3_v = [vs[2], vs[6], vs[7], vs[3]]
+    wall3_f = [(0, 1, 2, 3)]
+    mesh = bpy.data.meshes.new("wall3")
+    mesh.from_pydata(wall3_v, [], wall3_f)
+    obj = bpy.data.objects.new("wall3", mesh)
+    bpy.context.scene.objects.link(obj)
+    set_color(obj, color_wall)
+
+    wall4_v = [vs[4], vs[0], vs[3], vs[7]]
+    wall4_f = [(0, 1, 2, 3)]
+    mesh = bpy.data.meshes.new("wall4")
+    mesh.from_pydata(wall4_v, [], wall4_f)
+    obj = bpy.data.objects.new("wall4", mesh)
+    bpy.context.scene.objects.link(obj)
+    set_color(obj, color_wall)
+
+    # obj.location = [(i * -1) + mesh_offset[j] for j, i in enumerate(origin_offset)]
+    # return obj
 
 def make_cylinder(position, rotation, radius, length, name="cylinder"):
     mesh_data = bpy.data.meshes.new(name)
@@ -110,7 +193,7 @@ def make_cylinder(position, rotation, radius, length, name="cylinder"):
         diameter1=radius,
         diameter2=radius,
         depth=length)
-        
+
     bm.to_mesh(mesh_data)
     bm.free()
 
@@ -118,14 +201,14 @@ def make_cylinder(position, rotation, radius, length, name="cylinder"):
     bpy.context.scene.objects.link(mesh_obj)
     #mesh_obj.location = position
     mesh_obj.rotation_euler = rotation
-    set_color(mesh_obj, (0, 1, 0, 1))
+    set_color(mesh_obj, color_cylinder)
     return mesh_obj
 
 def make_random_cylinder():
     position = (random.uniform(-2, 2), random.uniform(-2, 2), random.uniform(0.0, 2.0))
-    rotation = (random.uniform(0, pi), random.uniform(0, pi), random.uniform(0, pi))
+    rotation = (0, 0, 0)
     radius = random.uniform(0.1, 1.0)
-    length = random.uniform(0.1, 10.0)
+    length = random.uniform(0.1, 2.0)
 
     return make_cylinder(position, rotation, radius, length)
 
@@ -135,13 +218,14 @@ def scan_random_object(iteration):
     scn = bpy.context.scene
 
     primitive = None
+    make_room()
     print("Creating primitive mesh.")
-    if random.uniform(0, 1) > 0.5:
-        make_random_cuboid()
-        primitive = "Cuboid"
-    else:
-        make_random_cylinder()
-        primitive = "Cylinder"
+# if random.uniform(0, 1) > 0.5:
+#     make_random_cuboid()
+#     primitive = "Cuboid"
+# else:
+    make_random_cylinder()
+    primitive = "Cylinder"
 
     # Add camera (lidar)
     print("Adding scanner to scene")
@@ -182,16 +266,19 @@ def scan_random_object(iteration):
 
     # Do scanning
     blensor.evd.output_labels = True
+    params = blensor.blendodyne.vlp16_parameters
     print("Scanning")
     # The world transformation might need to be a parameter in the future (for connecting to our existing code for getting the transformation in real life)
     output_filename = output_dir + f"/{iteration}.evd"
     blensor.blendodyne.scan_range(scanner_obj,
+                                  angle_resolution=params["angle_resolution"],
+                                  rotation_speed=params["rotation_speed"],
                                   filename=output_filename,
                                   frame_start=0,
                                   frame_end=len(locations)*sweep_duration,
                                   world_transformation=scanner_obj.matrix_world,
-                                  add_blender_mesh=True,
-                                  depth_map=True)
+                                  add_blender_mesh=False,
+                                  depth_map=False)
 
-for i in range(10):
+for i in range(1):
     scan_random_object(i)

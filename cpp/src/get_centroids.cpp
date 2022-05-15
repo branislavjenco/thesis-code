@@ -2,10 +2,6 @@
 // Created by Branislav Jenco on 30.05.2021.
 // Takes a point cloud saved in PCD, segments it and finds the centroids of the segments
 
-//
-// Created by Branislav Jenco on 30.05.2021.
-// Takes a point cloud saved in PCD, segments it and finds the centroids of the segments
-
 #include <pcl/point_cloud.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/io/auto_io.h>
@@ -160,7 +156,6 @@ main(int argc, char **argv)
     // Making a point cloud for each laser
     std::vector<point_cloud::Ptr> laser_clouds;
 
-
     // Distributing into new point clouds based on label
     distribute_by_label(cloud, 16, laser_clouds);
 
@@ -187,23 +182,8 @@ main(int argc, char **argv)
 
     // Get centroids
     std::vector<std::vector<double>> centroid_distances_by_laser;
-    int c = 0;
     for (auto &laser_cloud: laser_clouds)
     {
-//        // I dont quite understand why I did this projection
-//        point_cloud::Ptr laser_cloud_plane_proj(new point_cloud);
-//        pcl::ProjectInliers<pcl::PointXYZL> proj;
-//        proj.setModelType (pcl::SACMODEL_PLANE);
-//        proj.setInputCloud (laser_cloud);
-//        proj.setModelCoefficients (plane_coeff);
-//        proj.filter (*laser_cloud_plane_proj);
-//
-//        point_cloud::Ptr laser_cloud_line_proj(new point_cloud);
-//        pcl::ProjectInliers<pcl::PointXYZL> proj2;
-//        proj.setModelType (pcl::SACMODEL_PLANE);
-//        proj.setInputCloud (laser_cloud_plane_proj);
-//        proj.setModelCoefficients (rotated_plane_coeff);
-//        proj.filter (*laser_cloud_line_proj);
 
         // Segment individual clouds
         pcl::search::KdTree<pcl::PointXYZL>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZL>);
@@ -230,12 +210,6 @@ main(int argc, char **argv)
             count = count + 1;
         }
 
-        if (c < 1) {
-//            visualize(laser_cloud, rotated_plane_coeff);
-//            visualize(laser_cloud_plane_proj, rotated_plane_coeff);
-//            visualize(laser_cloud_line_proj, rotated_plane_coeff);
-            c++;
-        }
         // Distribute based on the new label
         distribute_by_label(laser_cloud, cluster_indices.size(), cluster_clouds);
 

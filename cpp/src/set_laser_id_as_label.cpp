@@ -1,8 +1,10 @@
-//
-// Created by Branislav Jenco on 14.05.2021.
-// Simply takes a point cloud saved in PCD with labels and transforms the labels (which
-// are meant to be laser angles corresponding to the VLP16 laser angles) to laser ids, based
-// on the VLP16 manual
+/*
+Created by Branislav Jenco on 14.05.2021.
+
+Takes a point cloud saved in PCD with labels and transforms the labels (which
+are meant to be laser angles corresponding to the VLP16 laser angles) to laser ids, based
+on the VLP16 manual
+*/
 
 #include <pcl/point_cloud.h>
 #include <pcl/io/pcd_io.h>

@@ -3,7 +3,6 @@ import pymesh
 import os
 import numpy as np
 
-#TODO make the input folder configurable
 def remove_duplicate_vertices(vertices, rtol=1e-02):
     dedup_verts = []
     duplicates = {}
@@ -74,7 +73,6 @@ for name, filepath in obj_files:
     new_vertices = np.array(new_vertices)
     bottom_mesh_flattened = trimesh.Trimesh(new_vertices, bottom_mesh.faces)
 
-    # TODO: figure out how to convert trimesh to pymesh (or get rid of trimesh)
     bottom_mesh_flattened.export(f'/output/tmp.ply')
     p_bottom_mesh = pymesh.load_mesh(f'/output/tmp.ply')
     p_bottom_mesh = pymesh.resolve_self_intersection(p_bottom_mesh)
@@ -122,7 +120,7 @@ for name, filepath in obj_files:
 
     middle_verts = merge_close_vertices(middle_verts, distance=0.2)
 
-    # middle verts now are the points where to put the laser
+    # middle_verts are now the points where to put the laser
     np.savetxt(f"/output/{os.path.splitext(name)[0]}.txt", np.array(middle_verts))
 
 

@@ -1,0 +1,3 @@
+# Inferring sensor positions
+
+The code in this directory was used for an exploration of how to programmatically place the virtual LiDAR sensor in 3D environments. Specifically room meshes in the `.ply` format from the 3D-FRONT dataset were used. The rough idea was to extract a 2D layout from the 3D environment and apply obtain a medial axis to then pick out the middle points as good candidates for the placement of the sensor. The Dockerfile is present because of the challenge of running some of the packages used at the same time. Ultimately this part of the code was not used in the thesis. 
